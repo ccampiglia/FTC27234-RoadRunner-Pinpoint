@@ -3,34 +3,45 @@ package org.firstinspires.ftc.teamcode;
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.Trajectory;
+import com.acmerobotics.roadrunner.Trajectory;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.PinpointDrive;
+
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Autonomous(name = "First_RoadRunner_Auto", preselectTeleOp = "Teleop_V4_Dual_Control_Main")
 public class First_RoadRunner_Auto extends LinearOpMode {
 
     // Variables used for the Arm positions
-    double ARM_TICKS_PER_DEGREE = 28;
-    double ARM_COLLAPSED_INTO_ROBOT = 15 * ARM_TICKS_PER_DEGREE;
-    double ARM_COLLECT = 10 * ARM_TICKS_PER_DEGREE;
-    double ARM_CLEAR_BARRIER = 15 * ARM_TICKS_PER_DEGREE;
-    double ARM_SCORE_SPECIMEN = 45 * ARM_TICKS_PER_DEGREE;
-    double ARM_ATTACH_HANGING_HOOK = 95 * ARM_TICKS_PER_DEGREE;
-    double ARM_WINCH_ROBOT = 10 * ARM_TICKS_PER_DEGREE;
-    double ARM_SCORE_SAMPLE_IN_LOW = 50 * ARM_TICKS_PER_DEGREE;
-    double ARM_SCORE_IN_HIGH_BASKEST = 65 * ARM_TICKS_PER_DEGREE;
+    int ARM_TICKS_PER_DEGREE = 28;
+    int ARM_COLLAPSED_INTO_ROBOT = 15 * ARM_TICKS_PER_DEGREE;
+    int ARM_COLLECT = 10 * ARM_TICKS_PER_DEGREE;
+    int ARM_CLEAR_BARRIER = 15 * ARM_TICKS_PER_DEGREE;
+    int ARM_SCORE_SPECIMEN = 45 * ARM_TICKS_PER_DEGREE;
+    int ARM_ATTACH_HANGING_HOOK = 95 * ARM_TICKS_PER_DEGREE;
+    int ARM_WINCH_ROBOT = 10 * ARM_TICKS_PER_DEGREE;
+    int ARM_SCORE_SAMPLE_IN_LOW = 50 * ARM_TICKS_PER_DEGREE;
+    int ARM_SCORE_IN_HIGH_BASKET = 65 * ARM_TICKS_PER_DEGREE;
 
     // Variables to store the lengths of viper slide positions.
-    double SLIDE_MIN_EXTEND = 0;
-    double SLIDE_MAX_EXTEND = 4000;
-    double SLIDE_COLLECT = 1500;
-    double SLIDE_SCORE_LOW = 863;
+    int SLIDE_MIN_EXTEND = 0;
+    int SLIDE_MAX_EXTEND = 4000;
+    int SLIDE_COLLECT = 1500;
+    int SLIDE_SCORE_LOW = 863;
 
     // Variables to store the speed the intake servo should be set at to intake, and deposit game elements.
     double INTAKE_HOLD_IT = -0.3;
@@ -44,8 +55,8 @@ public class First_RoadRunner_Auto extends LinearOpMode {
     double WRIST_CENTERED = 0.49;
 
     // A number in degrees that the triggers can adjust the arm position by
-    double FUDGE_FACTOR = 10 * ARM_TICKS_PER_DEGREE;
-    double SLIDE_FUDGE_FACTOR = 600;
+    int FUDGE_FACTOR = 10 * ARM_TICKS_PER_DEGREE;
+    int SLIDE_FUDGE_FACTOR = 600;
 
     // Variables that are used to set Odometry Pod Servos
     double POD_UP = 1;
@@ -59,12 +70,15 @@ public class First_RoadRunner_Auto extends LinearOpMode {
     CRServo intake;
     Servo wrist;
 
+
     /**
      * Sample Autonomous opMode using Roadrunner with GoBilda Pinpoint Odometry
      */
     @Override
     public void runOpMode() throws InterruptedException {
-        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0));
+        //Instantiate Pinpoint Roadrunner drive and pose
+        Pose2d initialPose = new Pose2d(0, 0, 0);
+        PinpointDrive drive = new PinpointDrive(hardwareMap, initialPose);
 
         x_pod_lift = hardwareMap.get(Servo.class, "x_pod_lift");
         y_pod_lift = hardwareMap.get(Servo.class, "y_pod_lift");
@@ -72,7 +86,6 @@ public class First_RoadRunner_Auto extends LinearOpMode {
         wrist = hardwareMap.get(Servo.class, "wrist");
         left_arm = hardwareMap.get(DcMotor.class, "left_arm");
         viper_slide = hardwareMap.get(DcMotor.class, "viper_slide");
-
 
         // A function to set the default settings for the arm and viber slide motors
         SetMotorSettings();
@@ -92,32 +105,79 @@ public class First_RoadRunner_Auto extends LinearOpMode {
             setArmToTarget(ARM_SCORE_SPECIMEN + 8 * ARM_TICKS_PER_DEGREE);
             setViperSlideToTarget(SLIDE_SCORE_LOW + 30);
 
-            //Drive forward 10 inches
-            Actions.runBlocking(
+            //Move to Sumbersible
+            Actions.runBlocking((
                     drive.actionBuilder(new Pose2d(0, 0, 0))
-                            .lineToX(10)
-                            .lineToY(6)
-                            .lineToX(15)
-                            .build());
+                            .setTangent(0)
+                            .splineToConstantHeading(new Vector2d(36,32),Math.PI / 2)
+                            .waitSeconds(1)
+                            .build()
+                    ));
+
 
             setArmToTarget(ARM_SCORE_SPECIMEN + 0);
-            sleep(200);
 
-
-            drive("FORWARD", 100, 100, 0.3);
-            drive("LEFT", 600, 600, 0.3);
-            drive("FORWARD", 650, 650, 0.3);
-            sleep(200);
-            setArmToTarget(ARM_SCORE_SPECIMEN + 0);
-            sleep(200);
-            drive("REV", -650, -650, 0.3);
-            drive("RIGHT", 1200, 1200, 0.4);
+            //Move Back
+            Actions.runBlocking((
+                    drive.actionBuilder(new Pose2d(36, 32, 0))
+                            .waitSeconds(1)
+                            .lineToX(30)
+                            .build()
+            ));
 
             intake.setPower(INTAKE_OFF);
             setViperSlideToTarget(SLIDE_MIN_EXTEND);
             setArmToTarget(ARM_COLLAPSED_INTO_ROBOT);
+
+            //spline to push
+            Actions.runBlocking((
+                    drive.actionBuilder(new Pose2d(30, 32, 0))
+                            .strafeTo(new Vector2d(30,0))
+                            .setTangent(0)
+                            .splineToLinearHeading(new Pose2d(70,-15, Math.toRadians(180)),Math.PI / 2)
+                            .build()
+            ));
+
+        }
+
+
+    }
+    /**
+     * Classes for mechanism Actions
+     */
+    // Class for Intake Servo Actions
+    public class IntakeMode implements Action {
+        CRServo intake;
+        double intakePower;
+
+        public IntakeMode(CRServo s, double p){
+            this.intake = s;
+            this.intakePower = p;
+        }
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            intake.setPower(intakePower);
+            return false;
         }
     }
+
+    // Class for Wrist Servo Actions
+    public class WristMode implements Action {
+        Servo wrist;
+        double wristPosition;
+
+        public WristMode(Servo s, double p){
+            this.wrist = s;
+            this.wristPosition = p;
+        }
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            wrist.setPosition(wristPosition);
+            return false;
+        }
+    }
+
+
 
     // Sets all the motor settings at once
     private void SetMotorSettings() {
@@ -137,7 +197,7 @@ public class First_RoadRunner_Auto extends LinearOpMode {
 
     //Moves the Arm to a target position
     private void setArmToTarget(int _position) {
-        // Set the target postiion of the arm based on the last variable selected by the driver
+        // Set the target position of the arm based on the last variable selected by the driver
         left_arm.setTargetPosition(_position);
         left_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Here we set the target velocity (speed) the motor runs at. This is in ticks-per-second.
@@ -151,7 +211,7 @@ public class First_RoadRunner_Auto extends LinearOpMode {
 
     // Moves Viper Slide motor to a target position
     private void setViperSlideToTarget(int _position) {
-        // Set the target postiion of the VIPER SLIDE  based on the last variable selected by the driver
+        // Set the target position of the VIPER SLIDE  based on the last variable selected by the driver
         viper_slide.setTargetPosition(_position);
         viper_slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Here we set the target velocity (speed) the motor runs at. This is in ticks-per-second.
@@ -171,15 +231,8 @@ public class First_RoadRunner_Auto extends LinearOpMode {
         telemetry.addData("Arm Current Position:", left_arm.getCurrentPosition());
         telemetry.addData("Arm Current Power", left_arm.getPower());
         telemetry.addData("Arm Target", left_arm.getTargetPosition());
-        telemetry.addData("Encoder Position", left_front_drive.getCurrentPosition());
         telemetry.update();
     }
 
-    public class ServoAction implements Action {
 
-        @Override
-        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            return false;
-        }
-    }
 }
