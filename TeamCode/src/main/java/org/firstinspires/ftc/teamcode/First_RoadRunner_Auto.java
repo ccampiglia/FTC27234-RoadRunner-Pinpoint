@@ -66,7 +66,7 @@ public class First_RoadRunner_Auto extends LinearOpMode {
     DcMotor viper_slide;
     Servo x_pod_lift;
     Servo y_pod_lift;
-    CRServo intake;
+    Servo claw;
     Servo wrist;
 
 
@@ -81,7 +81,7 @@ public class First_RoadRunner_Auto extends LinearOpMode {
 
         x_pod_lift = hardwareMap.get(Servo.class, "x_pod_lift");
         y_pod_lift = hardwareMap.get(Servo.class, "y_pod_lift");
-        intake = hardwareMap.get(CRServo.class, "intake");
+        claw = hardwareMap.get(Servo.class, "intake");
         wrist = hardwareMap.get(Servo.class, "wrist");
         left_arm = hardwareMap.get(DcMotor.class, "left_arm");
         viper_slide = hardwareMap.get(DcMotor.class, "viper_slide");
@@ -92,13 +92,13 @@ public class First_RoadRunner_Auto extends LinearOpMode {
         // Make sure that the intake is off, and the wrist is folded in.
         x_pod_lift.setPosition(POD_DOWN);
         y_pod_lift.setPosition(POD_DOWN);
-        intake.setPower(0);
+        claw.setPosition(0);
         setTelemetry();
 
         //Waits for the start button to be pressed
         waitForStart();
         if (opModeIsActive()) {
-            intake.setPower(INTAKE_HOLD_IT);
+            claw.setPosition(INTAKE_HOLD_IT);
             wrist.setPosition(WRIST_CENTERED);
             // Put run blocks here.
             setArmToTarget(ARM_SCORE_SPECIMEN + 8 * ARM_TICKS_PER_DEGREE);
@@ -108,10 +108,10 @@ public class First_RoadRunner_Auto extends LinearOpMode {
             Actions.runBlocking((
                     drive.actionBuilder(new Pose2d(0, 0, 0))
                             .setTangent(0)
-                            .splineToConstantHeading(new Vector2d(36,32),Math.PI / 2)
+                            .splineToConstantHeading(new Vector2d(36, 32), Math.PI / 2)
                             .waitSeconds(1)
                             .build()
-                    ));
+            ));
 
 
             setArmToTarget(ARM_SCORE_SPECIMEN + 0);
@@ -124,16 +124,16 @@ public class First_RoadRunner_Auto extends LinearOpMode {
                             .build()
             ));
 
-            intake.setPower(INTAKE_OFF);
+            claw.setPosition(INTAKE_OFF);
             setViperSlideToTarget(SLIDE_MIN_EXTEND);
             setArmToTarget(ARM_COLLAPSED_INTO_ROBOT);
 
             //spline to push
             Actions.runBlocking((
                     drive.actionBuilder(new Pose2d(30, 32, 0))
-                            .strafeTo(new Vector2d(30,0))
+                            .strafeTo(new Vector2d(30, 0))
                             .setTangent(0)
-                            .splineToLinearHeading(new Pose2d(70,-15, Math.toRadians(180)),Math.PI / 2)
+                            .splineToSplineHeading(new Pose2d(70, -15, Math.toRadians(180)), Math.PI / 2)
                             .build()
             ));
 
@@ -141,6 +141,7 @@ public class First_RoadRunner_Auto extends LinearOpMode {
 
 
     }
+
     /**
      * Classes for mechanism Actions
      */
@@ -149,10 +150,11 @@ public class First_RoadRunner_Auto extends LinearOpMode {
         CRServo intake;
         double intakePower;
 
-        public IntakeMode(CRServo s, double p){
+        public IntakeMode(CRServo s, double p) {
             this.intake = s;
             this.intakePower = p;
         }
+
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             intake.setPower(intakePower);
@@ -165,10 +167,11 @@ public class First_RoadRunner_Auto extends LinearOpMode {
         Servo wrist;
         double wristPosition;
 
-        public WristMode(Servo s, double p){
+        public WristMode(Servo s, double p) {
             this.wrist = s;
             this.wristPosition = p;
         }
+
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             wrist.setPosition(wristPosition);
@@ -177,10 +180,12 @@ public class First_RoadRunner_Auto extends LinearOpMode {
     }
 
 
-
     // Sets all the motor settings at once
     private void SetMotorSettings() {
         // Most skid-steer/differential drive robots require reversing one motor to drive forward.
+        //Set Odometry Servo Direction
+        x_pod_lift.setDirection(Servo.Direction.FORWARD);
+        y_pod_lift.setDirection(Servo.Direction.REVERSE);
         //Drive motors are set in the MecanumDrive class in Roadrunner
         left_arm.setDirection(DcMotor.Direction.FORWARD);
         viper_slide.setDirection(DcMotor.Direction.REVERSE);
