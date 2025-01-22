@@ -147,6 +147,7 @@ public class First_RoadRunner_Auto_2 extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(58.00, -24.00), Math.toRadians(90.00))
                 .splineToConstantHeading(new Vector2d(66.00, -0.00), Math.toRadians(90.00))
                 .splineToConstantHeading(new Vector2d(66.00, -60.00), Math.toRadians(90.00));
+        Action trajectoryActionStart = tab1.build();
         Action trajectoryActionCloseOut = tab1.endTrajectory().fresh()
                 .strafeTo(new Vector2d(9.83, -31.67))
                 .build();
@@ -160,42 +161,28 @@ public class First_RoadRunner_Auto_2 extends LinearOpMode {
         waitForStart();
         if (opModeIsActive()) {
             //Automation Run Code
+            Actions.runBlocking(
+                    new SequentialAction(
+                            trajectoryActionStart,
+                            claw.closeClaw()
+                    )
+            );
             wrist.setPosition(WRIST_FOLDED_IN);
             setArmToTarget(ARM_SCORE_SPECIMEN + 8 * ARM_TICKS_PER_DEGREE);
             setViperSlideToTarget(SLIDE_SCORE_LOW + 30);
 
-            //Move to Sumbersible
-            Actions.runBlocking((
-                    drive.actionBuilder(new Pose2d(0, 0, 0))
-                            .setTangent(0)
-                            .splineToConstantHeading(new Vector2d(36, 32), Math.PI / 2)
-                            .waitSeconds(1)
-                            .build()
-            ));
-
-
             setArmToTarget(ARM_SCORE_SPECIMEN + 0);
+            Actions.runBlocking(
+                    new SequentialAction(
+                        claw.openWideClaw(),
+                        claw.closeClaw()
+                    )
+            );
 
-            //Move Back
-            Actions.runBlocking((
-                    drive.actionBuilder(new Pose2d(36, 32, 0))
-                            .waitSeconds(1)
-                            .lineToX(30)
-                            .build()
-            ));
-
-            Actions.runBlocking(claw.closeClaw());
             setViperSlideToTarget(SLIDE_MIN_EXTEND);
             setArmToTarget(ARM_COLLAPSED_INTO_ROBOT);
 
-            //spline to push
-            Actions.runBlocking((
-                    drive.actionBuilder(new Pose2d(30, 32, 0))
-                            .strafeTo(new Vector2d(30, 0))
-                            .setTangent(0)
-                            .splineToSplineHeading(new Pose2d(70, -15, Math.toRadians(180)), Math.PI / 2)
-                            .build()
-            ));
+            Actions.runBlocking(trajectoryActionCloseOut);
 
         }
 
