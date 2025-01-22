@@ -65,7 +65,7 @@ public class MecanumDrive {
         // drive model parameters
         public double inPerTick = 1; // If you're using OTOS/Pinpoint leave this at 1 (all values will be in inches, 1 tick = 1 inch)
         public double lateralInPerTick = 0.9181163113870386; // Tune this with LateralRampLogger (even if you use OTOS/Pinpoint)
-        public double trackWidthTicks = 18.75;
+        public double trackWidthTicks = 17.75;
 
         // feedforward parameters (in tick units)
         public double kS = 0.7900617620439068;

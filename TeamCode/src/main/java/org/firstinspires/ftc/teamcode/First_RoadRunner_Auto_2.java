@@ -22,36 +22,37 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "First_RoadRunner_Auto", preselectTeleOp = "Teleop_V4_Dual_Control_Main")
-public class First_RoadRunner_Auto extends LinearOpMode {
+@Autonomous(name = "First_RoadRunner_Auto_2", preselectTeleOp = "Teleop_V4_Dual_Control_Main")
+public class First_RoadRunner_Auto_2 extends LinearOpMode {
 
     // Variables used for the Arm positions
     int ARM_TICKS_PER_DEGREE = 28;
     int ARM_COLLAPSED_INTO_ROBOT = 15 * ARM_TICKS_PER_DEGREE;
-    int ARM_COLLECT = 10 * ARM_TICKS_PER_DEGREE;
+    int ARM_COLLECT = 15 * ARM_TICKS_PER_DEGREE;
     int ARM_CLEAR_BARRIER = 15 * ARM_TICKS_PER_DEGREE;
-    int ARM_SCORE_SPECIMEN = 45 * ARM_TICKS_PER_DEGREE;
-    int ARM_ATTACH_HANGING_HOOK = 95 * ARM_TICKS_PER_DEGREE;
-    int ARM_WINCH_ROBOT = 10 * ARM_TICKS_PER_DEGREE;
+    int ARM_SCORE_SPECIMEN = 50 * ARM_TICKS_PER_DEGREE;
+    int ARM_ATTACH_HANGING_HOOK = 89 * ARM_TICKS_PER_DEGREE;
+    int ARM_WINCH_ROBOT = 5 * ARM_TICKS_PER_DEGREE;
     int ARM_SCORE_SAMPLE_IN_LOW = 50 * ARM_TICKS_PER_DEGREE;
     int ARM_SCORE_IN_HIGH_BASKET = 65 * ARM_TICKS_PER_DEGREE;
 
     // Variables to store the lengths of viper slide positions.
     int SLIDE_MIN_EXTEND = 0;
-    int SLIDE_MAX_EXTEND = 4000;
-    int SLIDE_COLLECT = 1500;
-    int SLIDE_SCORE_LOW = 863;
+    int SLIDE_MAX_EXTEND = 5000;
+    int SLIDE_COLLECT = 1700;
+    int SLIDE_SCORE_LOW = 800;
 
     // Variables to store the speed the intake servo should be set at to intake, and deposit game elements.
-    double INTAKE_HOLD_IT = -0.3;
-    double INTAKE_COLLECT = -1;
-    double INTAKE_OFF = 0;
-    double INTAKE_DEPOSIT = 0.3;
+    double CLAW_CLOSED = 0.12;
+    double CLAW_OPEN_WIDE = 0.4;
+    double CLAW_OPEN_SMALL = 0.3;
 
     // Variables to store the positions that the wrist should be set to when folding in, or folding out.
-    double WRIST_FOLDED_IN = 0.1;
-    double WRIST_FOLDED_OUT = 0.8;
-    double WRIST_CENTERED = 0.49;
+    double WRIST_FOLDED_IN = 0.25;
+    double WRIST_BASKET = 0.9;
+    double WRIST_COLLECT = 0.7;
+    double WRIST_SPECIMEN = 0.9;
+    double WRIST_FUDGE_FACTOR = 0.2;
 
     // A number in degrees that the triggers can adjust the arm position by
     int FUDGE_FACTOR = 10 * ARM_TICKS_PER_DEGREE;
@@ -66,9 +67,49 @@ public class First_RoadRunner_Auto extends LinearOpMode {
     DcMotor viper_slide;
     Servo x_pod_lift;
     Servo y_pod_lift;
-    Servo claw;
+    //Servo claw;
     Servo wrist;
 
+    public class Claw {
+        //Define the Servo
+        private Servo claw;
+        public Claw(HardwareMap hardwareMap) {
+            claw = hardwareMap.get(Servo.class, "intake");
+        }
+        //Class to Close the Claw
+        public class CloseClaw implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                claw.setPosition(CLAW_CLOSED);
+                return false;
+            }
+        }
+        public Action closeClaw() {
+            return new CloseClaw();
+        }
+        //Class to Open the Claw Wide
+        public class OpenWideClaw implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                claw.setPosition(CLAW_OPEN_WIDE);
+                return false;
+            }
+        }
+        public Action openWideClaw() {
+            return new OpenWideClaw();
+        }
+        //Class to Open the Claw Narrow
+        public class OpenSmallClaw implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                claw.setPosition(CLAW_OPEN_SMALL);
+                return false;
+            }
+        }
+        public Action openSmallClaw() {
+            return new OpenSmallClaw();
+        }
+    }
 
     /**
      * Sample Autonomous opMode using Roadrunner with GoBilda Pinpoint Odometry
@@ -76,12 +117,14 @@ public class First_RoadRunner_Auto extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         //Instantiate Pinpoint Roadrunner drive and pose
-        Pose2d initialPose = new Pose2d(0, 0, 0);
+        //Pose2d initialPose = new Pose2d(0, 0, 0);
+        Pose2d initialPose = new Pose2d(23.95, -71.71, Math.toRadians(90.00));
         PinpointDrive drive = new PinpointDrive(hardwareMap, initialPose);
+        Claw claw = new Claw(hardwareMap);
 
         x_pod_lift = hardwareMap.get(Servo.class, "x_pod_lift");
         y_pod_lift = hardwareMap.get(Servo.class, "y_pod_lift");
-        claw = hardwareMap.get(Servo.class, "intake");
+        //claw = hardwareMap.get(Servo.class, "intake");
         wrist = hardwareMap.get(Servo.class, "wrist");
         left_arm = hardwareMap.get(DcMotor.class, "left_arm");
         viper_slide = hardwareMap.get(DcMotor.class, "viper_slide");
@@ -92,15 +135,32 @@ public class First_RoadRunner_Auto extends LinearOpMode {
         // Make sure that the intake is off, and the wrist is folded in.
         x_pod_lift.setPosition(POD_DOWN);
         y_pod_lift.setPosition(POD_DOWN);
-        claw.setPosition(0);
         setTelemetry();
+
+        TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)
+                .splineToConstantHeading(new Vector2d(36.00, -24.00), Math.toRadians(90.00))
+                .splineToConstantHeading(new Vector2d(48.00, -0.00), Math.toRadians(90.00))
+                .splineToConstantHeading(new Vector2d(48.00, -60.00), Math.toRadians(90.00))
+                .splineToConstantHeading(new Vector2d(48.00, -24.00), Math.toRadians(90.00))
+                .splineToConstantHeading(new Vector2d(58.00, -0.00), Math.toRadians(90.00))
+                .splineToConstantHeading(new Vector2d(58.00, -60.00), Math.toRadians(90.00))
+                .splineToConstantHeading(new Vector2d(58.00, -24.00), Math.toRadians(90.00))
+                .splineToConstantHeading(new Vector2d(66.00, -0.00), Math.toRadians(90.00))
+                .splineToConstantHeading(new Vector2d(66.00, -60.00), Math.toRadians(90.00));
+        Action trajectoryActionCloseOut = tab1.endTrajectory().fresh()
+                .strafeTo(new Vector2d(9.83, -31.67))
+                .build();
+
+        // Actions that have to happen on Init.
+        Actions.runBlocking(claw.closeClaw());
+
+
 
         //Waits for the start button to be pressed
         waitForStart();
         if (opModeIsActive()) {
-            claw.setPosition(INTAKE_HOLD_IT);
-            wrist.setPosition(WRIST_CENTERED);
-            // Put run blocks here.
+            //Automation Run Code
+            wrist.setPosition(WRIST_FOLDED_IN);
             setArmToTarget(ARM_SCORE_SPECIMEN + 8 * ARM_TICKS_PER_DEGREE);
             setViperSlideToTarget(SLIDE_SCORE_LOW + 30);
 
@@ -124,7 +184,7 @@ public class First_RoadRunner_Auto extends LinearOpMode {
                             .build()
             ));
 
-            claw.setPosition(INTAKE_OFF);
+            Actions.runBlocking(claw.closeClaw());
             setViperSlideToTarget(SLIDE_MIN_EXTEND);
             setArmToTarget(ARM_COLLAPSED_INTO_ROBOT);
 
@@ -142,51 +202,14 @@ public class First_RoadRunner_Auto extends LinearOpMode {
 
     }
 
-    /**
-     * Classes for mechanism Actions
-     */
-    // Class for Intake Servo Actions
-    public class IntakeMode implements Action {
-        CRServo intake;
-        double intakePower;
-
-        public IntakeMode(CRServo s, double p) {
-            this.intake = s;
-            this.intakePower = p;
-        }
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            intake.setPower(intakePower);
-            return false;
-        }
-    }
-
-    // Class for Wrist Servo Actions
-    public class WristMode implements Action {
-        Servo wrist;
-        double wristPosition;
-
-        public WristMode(Servo s, double p) {
-            this.wrist = s;
-            this.wristPosition = p;
-        }
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            wrist.setPosition(wristPosition);
-            return false;
-        }
-    }
-
 
     // Sets all the motor settings at once
     private void SetMotorSettings() {
-        // Most skid-steer/differential drive robots require reversing one motor to drive forward.
+        //Drive motors are set in the MecanumDrive class in Roadrunner
         //Set Odometry Servo Direction
         x_pod_lift.setDirection(Servo.Direction.FORWARD);
         y_pod_lift.setDirection(Servo.Direction.REVERSE);
-        //Drive motors are set in the MecanumDrive class in Roadrunner
+        //Set Arm and Slide motor direction
         left_arm.setDirection(DcMotor.Direction.FORWARD);
         viper_slide.setDirection(DcMotor.Direction.REVERSE);
         // Reset Encoder Positions of Arm and Viper Slide to zero
@@ -235,6 +258,8 @@ public class First_RoadRunner_Auto extends LinearOpMode {
         telemetry.addData("Arm Current Position:", left_arm.getCurrentPosition());
         telemetry.addData("Arm Current Power", left_arm.getPower());
         telemetry.addData("Arm Target", left_arm.getTargetPosition());
+        //telemetry.addData("Claw Position", claw.getPosition());
+        telemetry.addData("Wrist Position", wrist.getPosition());
         telemetry.update();
     }
 
