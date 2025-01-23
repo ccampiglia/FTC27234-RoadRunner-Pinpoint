@@ -4,15 +4,22 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Arclength;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Pose2dDual;
+import com.acmerobotics.roadrunner.PosePath;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Trajectory;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 
@@ -27,7 +34,7 @@ public class First_RoadRunner_Auto_2 extends LinearOpMode {
 
     // Variables used for the Arm positions
     int ARM_TICKS_PER_DEGREE = 28;
-    int ARM_COLLAPSED_INTO_ROBOT = 15 * ARM_TICKS_PER_DEGREE;
+    int ARM_COLLAPSED_INTO_ROBOT = 5 * ARM_TICKS_PER_DEGREE;
     int ARM_COLLECT = 15 * ARM_TICKS_PER_DEGREE;
     int ARM_CLEAR_BARRIER = 15 * ARM_TICKS_PER_DEGREE;
     int ARM_SCORE_SPECIMEN = 50 * ARM_TICKS_PER_DEGREE;
@@ -73,39 +80,49 @@ public class First_RoadRunner_Auto_2 extends LinearOpMode {
     public class Claw {
         //Define the Servo
         private Servo claw;
+
         public Claw(HardwareMap hardwareMap) {
             claw = hardwareMap.get(Servo.class, "intake");
         }
+
         //Class to Close the Claw
         public class CloseClaw implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_CLOSED);
+                sleep(300);
                 return false;
             }
         }
+
         public Action closeClaw() {
             return new CloseClaw();
         }
+
         //Class to Open the Claw Wide
         public class OpenWideClaw implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_OPEN_WIDE);
+                sleep(300);
                 return false;
             }
         }
+
         public Action openWideClaw() {
             return new OpenWideClaw();
         }
+
         //Class to Open the Claw Narrow
         public class OpenSmallClaw implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_OPEN_SMALL);
+                sleep(300);
                 return false;
             }
         }
+
         public Action openSmallClaw() {
             return new OpenSmallClaw();
         }
@@ -118,8 +135,9 @@ public class First_RoadRunner_Auto_2 extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         //Instantiate Pinpoint Roadrunner drive and pose
         //Pose2d initialPose = new Pose2d(0, 0, 0);
-        Pose2d initialPose = new Pose2d(23.95, -71.71, Math.toRadians(90.00));
+        Pose2d initialPose = new Pose2d(28, -71.71, Math.toRadians(90.00));
         PinpointDrive drive = new PinpointDrive(hardwareMap, initialPose);
+
         Claw claw = new Claw(hardwareMap);
 
         x_pod_lift = hardwareMap.get(Servo.class, "x_pod_lift");
@@ -137,24 +155,60 @@ public class First_RoadRunner_Auto_2 extends LinearOpMode {
         y_pod_lift.setPosition(POD_DOWN);
         setTelemetry();
 
+        double velocityOverride = 100.0;
+
         TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)
-                .splineToConstantHeading(new Vector2d(36.00, -24.00), Math.toRadians(90.00))
-                .splineToConstantHeading(new Vector2d(48.00, -0.00), Math.toRadians(90.00))
-                .splineToConstantHeading(new Vector2d(48.00, -60.00), Math.toRadians(90.00))
-                .splineToConstantHeading(new Vector2d(48.00, -24.00), Math.toRadians(90.00))
-                .splineToConstantHeading(new Vector2d(58.00, -0.00), Math.toRadians(90.00))
-                .splineToConstantHeading(new Vector2d(58.00, -60.00), Math.toRadians(90.00))
-                .splineToConstantHeading(new Vector2d(58.00, -24.00), Math.toRadians(90.00))
-                .splineToConstantHeading(new Vector2d(66.00, -0.00), Math.toRadians(90.00))
-                .splineToConstantHeading(new Vector2d(66.00, -60.00), Math.toRadians(90.00));
+                //**** Move forward and spline behind first block
+                .splineToConstantHeading(new Vector2d(42.00, -40.00), Math.toRadians(90.00))
+                .lineToY(5, new TranslationalVelConstraint(velocityOverride))
+                .splineToConstantHeading(new Vector2d(52.00, 10.00), Math.toRadians(90.00),
+                        new TranslationalVelConstraint(velocityOverride))
+
+                //**** Push block back to observation zone
+                .lineToY(-60, new TranslationalVelConstraint(velocityOverride))
+
+                //**** Move straight forward then spline behind second block
+                .lineToY(5, new TranslationalVelConstraint(velocityOverride))
+                .splineToConstantHeading(new Vector2d(62.00, 10.00), Math.toRadians(90.00),
+                        new TranslationalVelConstraint(velocityOverride))
+
+                //**** Push block back to observation zone
+                .lineToY(-60, new TranslationalVelConstraint(velocityOverride))
+
+                //**** Move straight forward then spline behind third block
+                .lineToY(5, new TranslationalVelConstraint(velocityOverride))
+                .splineToConstantHeading(new Vector2d(72.00, 10.00), Math.toRadians(270.00),
+                        new TranslationalVelConstraint(velocityOverride))
+
+                //**** Push block back to observation zone
+                .lineToY(-50,
+                        new TranslationalVelConstraint(velocityOverride))
+                .splineToConstantHeading(new Vector2d(60.00, -50.00), Math.toRadians(270.00),
+                    new TranslationalVelConstraint(velocityOverride));
+
+        //Place Specimen
+        Pose2d startPosition = new Pose2d(60, -50, Math.toRadians(270.00));
+        TrajectoryActionBuilder tab2 = drive.actionBuilder(startPosition)
+                .strafeToLinearHeading(new Vector2d(-5, -32), Math.toRadians(90.00));
+
+        //Get Specimen
+        startPosition = new Pose2d(-5, -32, Math.toRadians(90.00));
+        TrajectoryActionBuilder tab3 = drive.actionBuilder(startPosition)
+                .strafeToLinearHeading(new Vector2d(60, -50), Math.toRadians(270.00));
+
+        //Return To Base (End)
+        startPosition = new Pose2d(-5, -32, Math.toRadians(90.00));
+        TrajectoryActionBuilder tab4 = drive.actionBuilder(startPosition)
+                .strafeTo(new Vector2d(60, -70));
+
+        //Create Actions from Trajectories
         Action trajectoryActionStart = tab1.build();
-        Action trajectoryActionCloseOut = tab1.endTrajectory().fresh()
-                .strafeTo(new Vector2d(9.83, -31.67))
-                .build();
+        Action trajectoryActionPutSpecimen = tab2.build();
+        Action trajectoryActionGetSpecimen = tab3.build();
+        Action trajectoryActionCloseOut = tab4.build();
 
         // Actions that have to happen on Init.
-        Actions.runBlocking(claw.closeClaw());
-
+        Actions.runBlocking(claw.openWideClaw());
 
 
         //Waits for the start button to be pressed
@@ -171,14 +225,24 @@ public class First_RoadRunner_Auto_2 extends LinearOpMode {
             setArmToTarget(ARM_SCORE_SPECIMEN + 8 * ARM_TICKS_PER_DEGREE);
             setViperSlideToTarget(SLIDE_SCORE_LOW + 30);
 
-            setArmToTarget(ARM_SCORE_SPECIMEN + 0);
             Actions.runBlocking(
                     new SequentialAction(
-                        claw.openWideClaw(),
-                        claw.closeClaw()
+                            trajectoryActionPutSpecimen,
+                            claw.openWideClaw(),
+                            claw.closeClaw(),
+                            trajectoryActionGetSpecimen,
+                            claw.openWideClaw(),
+                            claw.closeClaw(),
+                            trajectoryActionPutSpecimen,
+                            claw.openWideClaw(),
+                            claw.closeClaw(),
+                            trajectoryActionGetSpecimen,
+                            claw.openWideClaw(),
+                            claw.closeClaw(),
+                            trajectoryActionPutSpecimen
                     )
             );
-
+            setArmToTarget(ARM_SCORE_SPECIMEN + 0);
             setViperSlideToTarget(SLIDE_MIN_EXTEND);
             setArmToTarget(ARM_COLLAPSED_INTO_ROBOT);
 
