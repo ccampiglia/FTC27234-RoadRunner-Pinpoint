@@ -22,14 +22,14 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
     // Variables used for the Arm positions
     int ARM_TICKS_PER_DEGREE = 28;
     int ARM_COLLAPSED_INTO_ROBOT = 10 * ARM_TICKS_PER_DEGREE;
-    int ARM_COLLECT_SPECIMEN = 20 * ARM_TICKS_PER_DEGREE;
+    int ARM_COLLECT_SPECIMEN = 21 * ARM_TICKS_PER_DEGREE;
     int ARM_SCORE_SPECIMEN = 50 * ARM_TICKS_PER_DEGREE;
-    int ARM_ATTACH_SPECIMEN = 40 * ARM_TICKS_PER_DEGREE;
+    int ARM_ATTACH_SPECIMEN = 35 * ARM_TICKS_PER_DEGREE;
 
     // Variables to store the lengths of viper slide positions.
     int SLIDE_MIN_EXTEND = 0;
     int SLIDE_MAX_EXTEND = 5000;
-    int SLIDE_COLLECT = 1500;
+    int SLIDE_COLLECT = 1450;
     int SLIDE_SCORE_LOW = 800;
 
     // Variables to store the speed the intake servo should be set at to intake, and deposit game elements.
@@ -38,7 +38,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
     double CLAW_OPEN_SMALL = 0.3;
 
     // Variables to store the positions that the wrist should be set to when folding in, or folding out.
-    double WRIST_FOLDED_IN = 0.25;
+    double WRIST_FOLDED_IN = 0.35;
     double WRIST_COLLECT_SPECIMEN = 0.9;
     double WRIST_SCORE_SPECIMEN = 0.9;
     double WRIST_HANG_SPECIMEN = 0.5;
@@ -88,7 +88,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
         yPodLiftServo.setPosition(POD_DOWN);
         setTelemetry();
 
-        double velocityOverride = 90.0;
+        double velocityOverride = 1000.0;
 
         ///Waits for the start button to be pressed
         waitForStart();
@@ -115,12 +115,14 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
                             ///Back up and Move to Submersible
                             .lineToY(-40)
                             .stopAndAdd(wrist.wristScoreSpecimen())
-                            .strafeToLinearHeading(new Vector2d(0, -34), Math.toRadians(90.00),new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(0, -35), Math.toRadians(90.00),new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_COLLECT))
+
                             //.setTangent(Math.toRadians(90.00))
                             //.lineToY(-34.00)
 
                             ///Score Specimen
+                            .waitSeconds(1)
                             .stopAndAdd(arm.moveArmToPosition(ARM_ATTACH_SPECIMEN))
                             .stopAndAdd(wrist.wristHangSpecimen())
                             .stopAndAdd(claw.openSmallClaw())
@@ -140,12 +142,13 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
                             .lineToY(-40)
                             .stopAndAdd(wrist.wristScoreSpecimen())
-                            .strafeToLinearHeading(new Vector2d(-5, -34), Math.toRadians(90.00),new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(-5, -35), Math.toRadians(90.00),new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_COLLECT))
                             //.setTangent(Math.toRadians(90.00))
                             //.lineToY(-34.00)
 
                             ///Score Specimen
+                            .waitSeconds(1)
                             .stopAndAdd(arm.moveArmToPosition(ARM_ATTACH_SPECIMEN))
                             .stopAndAdd(wrist.wristHangSpecimen())
                             .stopAndAdd(claw.openSmallClaw())
@@ -210,7 +213,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 wrist.setPosition(WRIST_COLLECT_SPECIMEN);
-                sleep(1000);
+                sleep(800);
                 return false;
             }
         }
@@ -224,7 +227,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 wrist.setPosition(WRIST_SCORE_SPECIMEN);
-                sleep(1000);
+                sleep(800);
                 return false;
             }
         }
@@ -238,7 +241,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 wrist.setPosition(WRIST_HANG_SPECIMEN);
-                sleep(1000);
+                sleep(800);
                 return false;
             }
         }
@@ -263,7 +266,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_CLOSED);
-                sleep(1000);
+                sleep(800);
                 return false;
             }
         }
@@ -277,7 +280,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_OPEN_WIDE);
-                sleep(1000);
+                sleep(800);
                 return false;
             }
         }
@@ -291,7 +294,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_OPEN_SMALL);
-                sleep(1000);
+                sleep(800);
                 return false;
             }
         }
