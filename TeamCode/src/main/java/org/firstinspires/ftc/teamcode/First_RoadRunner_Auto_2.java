@@ -135,7 +135,7 @@ public class First_RoadRunner_Auto_2 extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         //Instantiate Pinpoint Roadrunner drive and pose
         //Pose2d initialPose = new Pose2d(0, 0, 0);
-        Pose2d initialPose = new Pose2d(28, -71.71, Math.toRadians(90.00));
+        Pose2d initialPose = new Pose2d(24, -63, Math.toRadians(90.00));
         PinpointDrive drive = new PinpointDrive(hardwareMap, initialPose);
 
         Claw claw = new Claw(hardwareMap);
@@ -184,7 +184,7 @@ public class First_RoadRunner_Auto_2 extends LinearOpMode {
                 .lineToY(-50,
                         new TranslationalVelConstraint(velocityOverride))
                 .splineToConstantHeading(new Vector2d(60.00, -50.00), Math.toRadians(270.00),
-                    new TranslationalVelConstraint(velocityOverride));
+                        new TranslationalVelConstraint(velocityOverride));
 
         //Place Specimen
         Pose2d startPosition = new Pose2d(60, -50, Math.toRadians(270.00));
