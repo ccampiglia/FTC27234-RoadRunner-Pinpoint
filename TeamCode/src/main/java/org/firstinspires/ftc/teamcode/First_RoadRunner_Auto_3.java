@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -20,122 +21,164 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
 
     // Variables used for the Arm positions
     int ARM_TICKS_PER_DEGREE = 28;
-    int ARM_COLLAPSED_INTO_ROBOT = 15 * ARM_TICKS_PER_DEGREE;
-    int ARM_COLLECT_SPECIMEN = 15 * ARM_TICKS_PER_DEGREE;
+    int ARM_COLLAPSED_INTO_ROBOT = 10 * ARM_TICKS_PER_DEGREE;
+    int ARM_COLLECT_SPECIMEN = 20 * ARM_TICKS_PER_DEGREE;
     int ARM_SCORE_SPECIMEN = 50 * ARM_TICKS_PER_DEGREE;
-    int ARM_SCORE_IN_HIGH_BASKET = 65 * ARM_TICKS_PER_DEGREE;
+    int ARM_ATTACH_SPECIMEN = 40 * ARM_TICKS_PER_DEGREE;
 
     // Variables to store the lengths of viper slide positions.
     int SLIDE_MIN_EXTEND = 0;
     int SLIDE_MAX_EXTEND = 5000;
-    int SLIDE_COLLECT = 1700;
+    int SLIDE_COLLECT = 1500;
     int SLIDE_SCORE_LOW = 800;
 
     // Variables to store the speed the intake servo should be set at to intake, and deposit game elements.
-    double CLAW_CLOSED = 0.12;
+    double CLAW_CLOSED = 0.0;
     double CLAW_OPEN_WIDE = 0.4;
     double CLAW_OPEN_SMALL = 0.3;
 
     // Variables to store the positions that the wrist should be set to when folding in, or folding out.
     double WRIST_FOLDED_IN = 0.25;
-    double WRIST_COLLECT_SPECIMEN = 0.7;
+    double WRIST_COLLECT_SPECIMEN = 0.9;
     double WRIST_SCORE_SPECIMEN = 0.9;
-    double WRIST_HANG_SPECIMEN = 0.7;
+    double WRIST_HANG_SPECIMEN = 0.5;
 
 
     // Variables that are used to set Odometry Pod Servos
     double POD_DOWN = 0.4;
 
-    //Motor and Servo hardware maps
-    DcMotor left_arm = hardwareMap.get(DcMotor.class, "left_arm");
-    DcMotor viper_slide = hardwareMap.get(DcMotor.class, "viper_slide");
-    Servo clawServo = hardwareMap.get(Servo.class, "intake");
-    Servo wristServo = hardwareMap.get(Servo.class, "wrist");
-    Servo xPodLiftServo = hardwareMap.get(Servo.class, "x_pod_lift");
-    Servo yPodLiftServo = hardwareMap.get(Servo.class, "y_pod_lift");
+    /// Motor and Servo hardware maps
+    DcMotor left_arm;
+    DcMotor viper_slide;
+    Servo clawServo;
+    Servo wristServo;
+    Servo xPodLiftServo;
+    Servo yPodLiftServo;
 
     /**
      * Sample Autonomous opMode using Roadrunner with GoBilda Pinpoint Odometry
      */
     @Override
     public void runOpMode() throws InterruptedException {
-        //Instantiate Pinpoint Roadrunner drive and pose
+        ///Initialize Motors and Servos
+        left_arm = hardwareMap.get(DcMotor.class, "left_arm");
+        viper_slide = hardwareMap.get(DcMotor.class, "viper_slide");
+        clawServo = hardwareMap.get(Servo.class, "intake");
+        wristServo = hardwareMap.get(Servo.class, "wrist");
+        xPodLiftServo = hardwareMap.get(Servo.class, "x_pod_lift");
+        yPodLiftServo = hardwareMap.get(Servo.class, "y_pod_lift");
+
+        ///Instantiate Pinpoint Roadrunner drive and pose
         //Pose2d initialPose = new Pose2d(0, 0, 0);
         Pose2d initialPose = new Pose2d(24, -63, Math.toRadians(90.00));
         PinpointDrive drive = new PinpointDrive(hardwareMap, initialPose);
-        //Claw claw = new Claw(hardwareMap);
-        //Wrist wrist = new Wrist(hardwareMap);
-        //Arm arm = new Arm(hardwareMap);
+        Claw claw = new Claw(hardwareMap);
+        Wrist wrist = new Wrist(hardwareMap);
+        Arm arm = new Arm(hardwareMap);
+        Slide slide = new Slide(hardwareMap);
 
-        // A function to set the default settings for the arm and viber slide motors
+        /// A function to set the default settings for the arm and viber slide motors
         SetMotorSettings();
 
-        // Initialize positions.
-        //claw.closeClaw();
-        //wrist.wristFoldedIn();
-        //arm.moveArmToPosition(ARM_COLLAPSED_INTO_ROBOT);
+        /// Initialize positions.
+        claw.closeClaw();
+        wrist.wristFoldedIn();
+        arm.moveArmToPosition(ARM_COLLAPSED_INTO_ROBOT);
         xPodLiftServo.setPosition(POD_DOWN);
         yPodLiftServo.setPosition(POD_DOWN);
         setTelemetry();
 
-        //Waits for the start button to be pressed
+        double velocityOverride = 90.0;
+
+        ///Waits for the start button to be pressed
         waitForStart();
         if (opModeIsActive()) {
-            //Automation Run Code
-            //Push Blocks
+            ///Automation Run Code
+            ///Push Blocks
             Actions.runBlocking(
                     drive.actionBuilder(initialPose)
-                            //**** Move forward and spline behind first block and push back to OZ
-                            .splineToLinearHeading(new Pose2d(37.0,-40.0, Math.toRadians(270)),Math.toRadians(90))
-                            .lineToY(00.0)
-                            .splineToConstantHeading(new Vector2d(48.00, 00.00), Math.toRadians(270))
-                            .lineToY(-60)
-                            //Back up and Move to Submersible
-                            .lineToY(-50)
-                            //.stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
-                            //.stopAndAdd(wrist.wristCollect())
-                            .strafeToLinearHeading(new Vector2d(5, -37), Math.toRadians(90.00))
-                            //Move back to OZ
-                            .strafeToLinearHeading(new Vector2d(48, -50), Math.toRadians(270.00))
-                            //.stopAndAdd(wrist.wristFoldedIn())
-                            //.stopAndAdd(claw.closeClaw())
-                            //.stopAndAdd(arm.moveArmToPosition(ARM_COLLAPSED_INTO_ROBOT))
+                            ///**** Move forward and spline behind first block and push back to OZ
+                            .splineToLinearHeading(new Pose2d(37.0, -40.0, Math.toRadians(90)), Math.toRadians(90))
+                            .lineToY(15.0)
+                            //.splineToConstantHeading(new Vector2d(48.00, 10.00), Math.toRadians(-90))
+                            .splineTo(new Vector2d(48.00, 15.00), Math.toRadians(-90))
+                            .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
+                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
+                            .stopAndAdd(wrist.wristCollect())
+                            .stopAndAdd(claw.openWideClaw())
+                            .lineToY(-46)
+
+                            ///GrabSpecimen
+                            .stopAndAdd(claw.closeClaw())
+                            .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
+
+                            ///Back up and Move to Submersible
+                            .lineToY(-40)
+                            .stopAndAdd(wrist.wristScoreSpecimen())
+                            .strafeToLinearHeading(new Vector2d(0, -34), Math.toRadians(90.00),new TranslationalVelConstraint(velocityOverride))
+                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_COLLECT))
+                            //.setTangent(Math.toRadians(90.00))
+                            //.lineToY(-34.00)
+
+                            ///Score Specimen
+                            .stopAndAdd(arm.moveArmToPosition(ARM_ATTACH_SPECIMEN))
+                            .stopAndAdd(wrist.wristHangSpecimen())
+                            .stopAndAdd(claw.openSmallClaw())
+                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
+                            .lineToY(-40)
+
+
+                            ///Strafe Back for 2nd Specimen
+                            .strafeToLinearHeading(new Vector2d(52, -45), Math.toRadians(-90.00),new TranslationalVelConstraint(velocityOverride))
+                            .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
+                            .stopAndAdd(wrist.wristCollect())
+
+                            ///GrabSpecimen
+                            .stopAndAdd(claw.closeClaw())
+
+                            ///Move to Submersible
+                            .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
+                            .lineToY(-40)
+                            .stopAndAdd(wrist.wristScoreSpecimen())
+                            .strafeToLinearHeading(new Vector2d(-5, -34), Math.toRadians(90.00),new TranslationalVelConstraint(velocityOverride))
+                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_COLLECT))
+                            //.setTangent(Math.toRadians(90.00))
+                            //.lineToY(-34.00)
+
+                            ///Score Specimen
+                            .stopAndAdd(arm.moveArmToPosition(ARM_ATTACH_SPECIMEN))
+                            .stopAndAdd(wrist.wristHangSpecimen())
+                            .stopAndAdd(claw.openSmallClaw())
+                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
+                            .lineToY(-40,new TranslationalVelConstraint(velocityOverride))
+
+                            ///Move back to OZ
+                            .strafeToLinearHeading(new Vector2d(52, -50), Math.toRadians(-90.00),new TranslationalVelConstraint(velocityOverride))
+                            .stopAndAdd(wrist.wristFoldedIn())
+                            .stopAndAdd(claw.closeClaw())
+                            .stopAndAdd(arm.moveArmToPosition(ARM_COLLAPSED_INTO_ROBOT))
                             .build()
             );
         }
     }
 
-    // Sets all the motor settings at once
+    /// Sets all the motor settings at once
     private void SetMotorSettings() {
-        //Drive motors are set in the MecanumDrive class in Roadrunner
-        //Set Odometry Servo Direction
+        ///Drive motors are set in the MecanumDrive class in Roadrunner
+        ///Set Odometry Servo Direction
         xPodLiftServo.setDirection(Servo.Direction.FORWARD);
         yPodLiftServo.setDirection(Servo.Direction.REVERSE);
-        //Set Arm and Slide motor direction
+        ///Set Arm and Slide motor direction
         left_arm.setDirection(DcMotor.Direction.FORWARD);
         viper_slide.setDirection(DcMotor.Direction.REVERSE);
-        // Reset Encoder Positions of Arm and Viper Slide to zero
+        /// Reset Encoder Positions of Arm and Viper Slide to zero
         left_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         viper_slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         left_arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         viper_slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        // Setting zeroPowerBehavior to BRAKE enables a "brake mode".
+        /// Setting zeroPowerBehavior to BRAKE enables a "brake mode".
         left_arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         viper_slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-    }
-
-    // Moves Viper Slide motor to a target position
-    private void setViperSlideToTarget(int _position) {
-        // Set the target position of the VIPER SLIDE  based on the last variable selected by the driver
-        viper_slide.setTargetPosition(_position);
-        viper_slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        // Here we set the target velocity (speed) the motor runs at. This is in ticks-per-second.
-        // This is a little under the maximum of 2800.
-        ((DcMotorEx) viper_slide).setVelocity(2000);
-        while (opModeIsActive() && viper_slide.isBusy()) {
-            idle();
-        }
-        telemetry.addData("slidePosition", _position);
     }
 
     //************************************************************
@@ -167,7 +210,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 wrist.setPosition(WRIST_COLLECT_SPECIMEN);
-                sleep(300);
+                sleep(1000);
                 return false;
             }
         }
@@ -177,17 +220,31 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
         }
 
         //Class to Put Wrist in Specimen Score Position
-        public class WristSpecimen implements Action {
+        public class WristScoreSpecimen implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 wrist.setPosition(WRIST_SCORE_SPECIMEN);
-                sleep(300);
+                sleep(1000);
                 return false;
             }
         }
 
-        public Action wristSpecimen() {
-            return new WristSpecimen();
+        public Action wristScoreSpecimen() {
+            return new Wrist.WristScoreSpecimen();
+        }
+
+        //Class to Put Wrist in Specimen Score Position
+        public class WristHangSpecimen implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                wrist.setPosition(WRIST_HANG_SPECIMEN);
+                sleep(1000);
+                return false;
+            }
+        }
+
+        public Action wristHangSpecimen() {
+            return new Wrist.WristHangSpecimen();
         }
     }
 
@@ -206,7 +263,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_CLOSED);
-                sleep(300);
+                sleep(1000);
                 return false;
             }
         }
@@ -220,7 +277,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_OPEN_WIDE);
-                sleep(300);
+                sleep(1000);
                 return false;
             }
         }
@@ -234,7 +291,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_OPEN_SMALL);
-                sleep(300);
+                sleep(1000);
                 return false;
             }
         }
@@ -250,13 +307,12 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
     //int ARM_SCORE_IN_HIGH_BASKET = 65 * ARM_TICKS_PER_DEGREE;
     //************************************************************
     //**** Create Class Arm Control
-    /**
     public class Arm {
         //Define the Motor
-        private DcMotorEx arm;
+        private DcMotor arm;
 
         public Arm(HardwareMap hardwareMap) {
-            arm = hardwareMap.get(DcMotorEx.class, "left_arm");
+            arm = hardwareMap.get(DcMotor.class, "left_arm");
             arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             arm.setDirection(DcMotorSimple.Direction.FORWARD);
         }
@@ -273,8 +329,8 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket packet) {
                 arm.setTargetPosition(armPosition);
                 arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                ((DcMotorEx) left_arm).setVelocity(2000);
-                while (opModeIsActive() && left_arm.isBusy()) {
+                ((DcMotorEx) arm).setVelocity(2800);
+                while (opModeIsActive() && arm.isBusy()) {
                     idle();
                 }
                 telemetry.addData("armPosition", arm.getCurrentPosition());
@@ -286,9 +342,46 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             return new Arm.MoveArmToPosition(p);
         }
     }
-    */
 
-    // Updates and reports Telemetry to the driver station
+    //************************************************************
+    //**** Create Class Viper Slide Control
+    public class Slide {
+        //Define the Motor
+        private DcMotor slide;
+
+        public Slide(HardwareMap hardwareMap) {
+            slide = hardwareMap.get(DcMotor.class, "viper_slide");
+            slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            slide.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
+
+        //Class  - Move to Arm Position
+        public class MoveSlideToPosition implements Action {
+            int slidePosition;
+
+            public MoveSlideToPosition(int p) {
+                this.slidePosition = p;
+            }
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                slide.setTargetPosition(slidePosition);
+                slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                ((DcMotorEx) slide).setVelocity(2800);
+                while (opModeIsActive() && slide.isBusy()) {
+                    idle();
+                }
+                telemetry.addData("armPosition", slide.getCurrentPosition());
+                return false;
+            }
+        }
+
+        public Action moveSlideToPosition(int p) {
+            return new Slide.MoveSlideToPosition(p);
+        }
+    }
+
+    /// Updates and reports Telemetry to the driver station
     private void setTelemetry() {
         telemetry.addData("Viper Slide Position", viper_slide.getCurrentPosition());
         telemetry.addData("Viper Slide Power", viper_slide.getPower());
