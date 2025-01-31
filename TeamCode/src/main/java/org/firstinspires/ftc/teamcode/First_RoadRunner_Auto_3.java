@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_SCORE_SPECIMEN;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -88,7 +91,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
         yPodLiftServo.setPosition(POD_DOWN);
         setTelemetry();
 
-        double velocityOverride = 1000.0;
+        double velocityOverride = 100.0;
 
         ///Waits for the start button to be pressed
         waitForStart();
@@ -98,10 +101,9 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             Actions.runBlocking(
                     drive.actionBuilder(initialPose)
                             ///**** Move forward and spline behind first block and push back to OZ
-                            .splineToLinearHeading(new Pose2d(37.0, -40.0, Math.toRadians(90)), Math.toRadians(90))
+                            .splineToLinearHeading(new Pose2d(40.0, -40.0, Math.toRadians(90)), Math.toRadians(90))
                             .lineToY(15.0)
-                            //.splineToConstantHeading(new Vector2d(48.00, 10.00), Math.toRadians(-90))
-                            .splineTo(new Vector2d(48.00, 15.00), Math.toRadians(-90))
+                            .strafeToLinearHeading(new Vector2d(53, 15), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
                             .stopAndAdd(wrist.wristCollect())
@@ -113,50 +115,50 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
 
                             ///Back up and Move to Submersible
-                            .lineToY(-40)
+                            //.lineToY(-40)
                             .stopAndAdd(wrist.wristScoreSpecimen())
-                            .strafeToLinearHeading(new Vector2d(0, -35), Math.toRadians(90.00),new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(-5, -35.5), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_COLLECT))
 
                             //.setTangent(Math.toRadians(90.00))
                             //.lineToY(-34.00)
 
                             ///Score Specimen
-                            .waitSeconds(1)
+                            .waitSeconds(.8)
                             .stopAndAdd(arm.moveArmToPosition(ARM_ATTACH_SPECIMEN))
                             .stopAndAdd(wrist.wristHangSpecimen())
                             .stopAndAdd(claw.openSmallClaw())
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
-                            .lineToY(-40)
+                            .lineToY(-40, new TranslationalVelConstraint(velocityOverride))
 
 
                             ///Strafe Back for 2nd Specimen
-                            .strafeToLinearHeading(new Vector2d(52, -45), Math.toRadians(-90.00),new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(52, -45), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
                             .stopAndAdd(wrist.wristCollect())
 
                             ///GrabSpecimen
                             .stopAndAdd(claw.closeClaw())
+                            .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
 
                             ///Move to Submersible
-                            .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
-                            .lineToY(-40)
+                            //.lineToY(-40)
                             .stopAndAdd(wrist.wristScoreSpecimen())
-                            .strafeToLinearHeading(new Vector2d(-5, -35), Math.toRadians(90.00),new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(-10, -35.5), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_COLLECT))
                             //.setTangent(Math.toRadians(90.00))
                             //.lineToY(-34.00)
 
                             ///Score Specimen
-                            .waitSeconds(1)
+                            .waitSeconds(.8)
                             .stopAndAdd(arm.moveArmToPosition(ARM_ATTACH_SPECIMEN))
                             .stopAndAdd(wrist.wristHangSpecimen())
                             .stopAndAdd(claw.openSmallClaw())
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
-                            .lineToY(-40,new TranslationalVelConstraint(velocityOverride))
+                            .lineToY(-40, new TranslationalVelConstraint(velocityOverride))
 
                             ///Move back to OZ
-                            .strafeToLinearHeading(new Vector2d(52, -50), Math.toRadians(-90.00),new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(57, -57), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(wrist.wristFoldedIn())
                             .stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLAPSED_INTO_ROBOT))
@@ -188,7 +190,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
     //**** Create Class and Methods for Wrist control
     public class Wrist {
         //Define the Servo
-        private Servo wrist;
+        private final Servo wrist;
 
         public Wrist(HardwareMap hardwareMap) {
             wrist = hardwareMap.get(Servo.class, "wrist");
@@ -199,7 +201,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 wrist.setPosition(WRIST_FOLDED_IN);
-                sleep(300);
+                //sleep(300);
                 return false;
             }
         }
@@ -213,7 +215,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 wrist.setPosition(WRIST_COLLECT_SPECIMEN);
-                sleep(800);
+                sleep(500);
                 return false;
             }
         }
@@ -227,7 +229,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 wrist.setPosition(WRIST_SCORE_SPECIMEN);
-                sleep(800);
+                sleep(500);
                 return false;
             }
         }
@@ -241,7 +243,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 wrist.setPosition(WRIST_HANG_SPECIMEN);
-                sleep(800);
+                sleep(300);
                 return false;
             }
         }
@@ -255,7 +257,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
     //**** Create Class and Methods for Claw control
     public class Claw {
         //Define the Servo
-        private Servo claw;
+        private final Servo claw;
 
         public Claw(HardwareMap hardwareMap) {
             claw = hardwareMap.get(Servo.class, "intake");
@@ -266,7 +268,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_CLOSED);
-                sleep(800);
+                sleep(500);
                 return false;
             }
         }
@@ -280,7 +282,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_OPEN_WIDE);
-                sleep(800);
+                sleep(300);
                 return false;
             }
         }
@@ -294,7 +296,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_OPEN_SMALL);
-                sleep(800);
+                sleep(300);
                 return false;
             }
         }
@@ -312,7 +314,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
     //**** Create Class Arm Control
     public class Arm {
         //Define the Motor
-        private DcMotor arm;
+        private final DcMotor arm;
 
         public Arm(HardwareMap hardwareMap) {
             arm = hardwareMap.get(DcMotor.class, "left_arm");
@@ -350,7 +352,7 @@ public class First_RoadRunner_Auto_3 extends LinearOpMode {
     //**** Create Class Viper Slide Control
     public class Slide {
         //Define the Motor
-        private DcMotor slide;
+        private final DcMotor slide;
 
         public Slide(HardwareMap hardwareMap) {
             slide = hardwareMap.get(DcMotor.class, "viper_slide");
