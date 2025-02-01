@@ -27,7 +27,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 
-@Autonomous(name = "RR_Auto_2Specimen", preselectTeleOp = "Teleop_V4_Dual_Control_Main")
+@Autonomous(name = "zzzzRR_Auto_2Specimen", preselectTeleOp = "Teleop_V4_Dual_Control_Main")
 public class RR_Auto_2Specimen extends LinearOpMode {
     /// Motor and Servo hardware maps
     DcMotor left_arm;
