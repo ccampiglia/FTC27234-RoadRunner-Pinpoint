@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_SCORE_SPECIMEN;
-
+import static org.firstinspires.ftc.teamcode.AutoVariables.*;
 import androidx.annotation.NonNull;
-
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
@@ -21,42 +19,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @Autonomous(name = "RR_Auto_Short_Wait5", preselectTeleOp = "TeleopClaw_V5_Dual_Control_MAIN")
 public class RR_Auto_Short_Wait5 extends LinearOpMode {
-
-    // Variables used for the Arm positions
-    int ARM_TICKS_PER_DEGREE = 28;
-    int ARM_COLLAPSED_INTO_ROBOT = 10 * ARM_TICKS_PER_DEGREE;
-    int ARM_COLLECT_SPECIMEN = 20 * ARM_TICKS_PER_DEGREE;
-    int ARM_COLLECT_SPECIMEN2 = 22 * ARM_TICKS_PER_DEGREE;
-
-    int ARM_SCORE_SPECIMEN = 50 * ARM_TICKS_PER_DEGREE;
-    int ARM_ATTACH_SPECIMEN = 35 * ARM_TICKS_PER_DEGREE;
-
-    // Variables to store the lengths of viper slide positions.
-    int SLIDE_MIN_EXTEND = 0;
-    int SLIDE_MAX_EXTEND = 5000;
-    int SLIDE_COLLECT = 1450;
-    int SLIDE_SCORE_LOW = 800;
-
-    // Variables to store the speed the intake servo should be set at to intake, and deposit game elements.
-    double CLAW_CLOSED = 0.0;
-    double CLAW_OPEN_WIDE = 0.4;
-    double CLAW_OPEN_SMALL = 0.3;
-
-    // Variables to store the positions that the wrist should be set to when folding in, or folding out.
-    double WRIST_FOLDED_IN = 0.0;
-    double WRIST_COLLECT_SPECIMEN = 0.63; //0.55
-    double WRIST_COLLECT_SPECIMEN2 = 0.9; //0.55
-
-    double WRIST_SCORE_SPECIMEN = 0.55;
-    double WRIST_HANG_SPECIMEN = 0.10;
-    //double WRIST_FOLDED_IN = 0.35;
-    //double WRIST_COLLECT_SPECIMEN = 0.9;
-    //double WRIST_SCORE_SPECIMEN = 0.9;
-    //double WRIST_HANG_SPECIMEN = 0.5;
-
-
-    // Variables that are used to set Odometry Pod Servos
-    double POD_DOWN = 0.4;
 
     /// Motor and Servo hardware maps
     DcMotor left_arm;
