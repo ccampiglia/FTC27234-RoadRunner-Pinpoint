@@ -20,7 +20,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Autonomous(name = "RR_Auto_Short_Wait5", preselectTeleOp = "TeleopClaw_V5_Dual_Control_MAIN")
-public class First_RoadRunner_Auto_2 extends LinearOpMode {
+public class RR_Auto_Short_Wait5 extends LinearOpMode {
 
     // Variables used for the Arm positions
     int ARM_TICKS_PER_DEGREE = 28;

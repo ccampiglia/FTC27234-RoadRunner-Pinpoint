@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_SCORE_SPECIMEN;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -16,17 +19,15 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "RR_Auto_Push", preselectTeleOp = "TeleopClaw_V5_Dual_Control_MAIN")
-public class First_RoadRunner_Auto_10 extends LinearOpMode {
+@Autonomous(name = "RR_Auto_Long", preselectTeleOp = "TeleopClaw_V5_Dual_Control_MAIN")
+public class RR_Auto_Long extends LinearOpMode {
 
     // Variables used for the Arm positions
     int ARM_TICKS_PER_DEGREE = 28;
     int ARM_COLLAPSED_INTO_ROBOT = 10 * ARM_TICKS_PER_DEGREE;
     int ARM_COLLECT_SPECIMEN = 20 * ARM_TICKS_PER_DEGREE;
-    int ARM_COLLECT_SPECIMEN2 = 22 * ARM_TICKS_PER_DEGREE;
-
     int ARM_SCORE_SPECIMEN = 50 * ARM_TICKS_PER_DEGREE;
-    int ARM_ATTACH_SPECIMEN = 30 * ARM_TICKS_PER_DEGREE;
+    int ARM_ATTACH_SPECIMEN = 35 * ARM_TICKS_PER_DEGREE;
 
     // Variables to store the lengths of viper slide positions.
     int SLIDE_MIN_EXTEND = 0;
@@ -41,9 +42,7 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
 
     // Variables to store the positions that the wrist should be set to when folding in, or folding out.
     double WRIST_FOLDED_IN = 0.0;
-    double WRIST_COLLECT_SPECIMEN = 0.61; //0.55
-    double WRIST_COLLECT_SPECIMEN2 = 0.9; //0.55
-
+    double WRIST_COLLECT_SPECIMEN = 0.58;
     double WRIST_SCORE_SPECIMEN = 0.55;
     double WRIST_HANG_SPECIMEN = 0.10;
     //double WRIST_FOLDED_IN = 0.35;
@@ -106,32 +105,30 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
             Actions.runBlocking(
                     drive.actionBuilder(initialPose)
                             ///**** Move forward and spline behind first block and push back to OZ
-                            //.splineToLinearHeading(new Pose2d(40.0, -40.0, Math.toRadians(90)), Math.toRadians(90))
-                            //.lineToY(15.0)
-                            //.strafeToLinearHeading(new Vector2d(53, 15), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
+                            .splineToLinearHeading(new Pose2d(40.0, -40.0, Math.toRadians(90)), Math.toRadians(90))
+                            .lineToY(15.0)
+                            .strafeToLinearHeading(new Vector2d(53, 15), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
                             .stopAndAdd(wrist.wristCollect())
                             .stopAndAdd(claw.openWideClaw())
-                            .strafeToLinearHeading(new Vector2d(52, -35), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
-                            .lineToY(-45)
+                            .lineToY(-46)
 
                             ///GrabSpecimen
-                            .waitSeconds(1)
                             .stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
 
                             ///Back up and Move to Submersible
                             //.lineToY(-40)
                             .stopAndAdd(wrist.wristScoreSpecimen())
-                            .strafeToLinearHeading(new Vector2d(-5, -33.0), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(-5, -35.5), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_COLLECT))
 
                             //.setTangent(Math.toRadians(90.00))
                             //.lineToY(-34.00)
 
                             ///Score Specimen
-                            .waitSeconds(1)
+                            .waitSeconds(.6)
                             .stopAndAdd(arm.moveArmToPosition(ARM_ATTACH_SPECIMEN))
                             .stopAndAdd(wrist.wristHangSpecimen())
                             .stopAndAdd(claw.openSmallClaw())
@@ -140,10 +137,9 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
 
 
                             ///Strafe Back for 2nd Specimen
-                            .strafeToLinearHeading(new Vector2d(52, -44.5), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
-                            .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN2))
-                            .stopAndAdd(wrist.wristCollect2())
-                            .waitSeconds(1.5)
+                            .strafeToLinearHeading(new Vector2d(52, -45), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
+                            .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
+                            .stopAndAdd(wrist.wristCollect())
 
                             ///GrabSpecimen
                             .stopAndAdd(claw.closeClaw())
@@ -151,11 +147,11 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
 
                             ///Move to Submersible
                             .stopAndAdd(wrist.wristScoreSpecimen())
-                            .strafeToLinearHeading(new Vector2d(-15, -33.0), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(-10, -35.5), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_COLLECT))
 
                             ///Score Specimen
-                            .waitSeconds(1)
+                            .waitSeconds(.6)
                             .stopAndAdd(arm.moveArmToPosition(ARM_ATTACH_SPECIMEN))
                             //.stopAndAdd(wrist.wristHangSpecimen())
                             .stopAndAdd(wrist.wristFoldedIn())
@@ -166,9 +162,9 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
                             ///Move back to OZ
                             .strafeToLinearHeading(new Vector2d(57, -57), Math.toRadians(90.00))
                             //.stopAndAdd(wrist.wristFoldedIn())
-                            .stopAndAdd(claw.closeClaw())
+                            //.stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLAPSED_INTO_ROBOT))
-                            .waitSeconds(1)
+                            .waitSeconds(.5)
                             .build()
             );
         }
@@ -213,7 +209,7 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
         }
 
         public Action wristFoldedIn() {
-            return new WristFoldedIn();
+            return new Wrist.WristFoldedIn();
         }
 
         //Class to Put Wrist in Collect Position
@@ -221,27 +217,13 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 wrist.setPosition(WRIST_COLLECT_SPECIMEN);
-                sleep(800);
+                sleep(300);
                 return false;
             }
         }
 
         public Action wristCollect() {
-            return new WristCollect();
-        }
-
-        //Class to Put Wrist in Collect Position
-        public class WristCollect2 implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                wrist.setPosition(WRIST_COLLECT_SPECIMEN2);
-                sleep(800);
-                return false;
-            }
-        }
-
-        public Action wristCollect2() {
-            return new WristCollect2();
+            return new Wrist.WristCollect();
         }
 
         //Class to Put Wrist in Specimen Score Position
@@ -249,13 +231,13 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 wrist.setPosition(WRIST_SCORE_SPECIMEN);
-                sleep(500);
+                sleep(300);
                 return false;
             }
         }
 
         public Action wristScoreSpecimen() {
-            return new WristScoreSpecimen();
+            return new Wrist.WristScoreSpecimen();
         }
 
         //Class to Put Wrist in Specimen Score Position
@@ -269,7 +251,7 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
         }
 
         public Action wristHangSpecimen() {
-            return new WristHangSpecimen();
+            return new Wrist.WristHangSpecimen();
         }
     }
 
@@ -288,13 +270,13 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 claw.setPosition(CLAW_CLOSED);
-                sleep(800);
+                sleep(500);
                 return false;
             }
         }
 
         public Action closeClaw() {
-            return new CloseClaw();
+            return new Claw.CloseClaw();
         }
 
         //Class to Open the Claw Wide
@@ -308,7 +290,7 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
         }
 
         public Action openWideClaw() {
-            return new OpenWideClaw();
+            return new Claw.OpenWideClaw();
         }
 
         //Class to Open the Claw Narrow
@@ -322,7 +304,7 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
         }
 
         public Action openSmallClaw() {
-            return new OpenSmallClaw();
+            return new Claw.OpenSmallClaw();
         }
     }
 
@@ -364,7 +346,7 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
         }
 
         public Action moveArmToPosition(int p) {
-            return new MoveArmToPosition(p);
+            return new Arm.MoveArmToPosition(p);
         }
     }
 
@@ -402,7 +384,7 @@ public class First_RoadRunner_Auto_10 extends LinearOpMode {
         }
 
         public Action moveSlideToPosition(int p) {
-            return new MoveSlideToPosition(p);
+            return new Slide.MoveSlideToPosition(p);
         }
     }
 

@@ -1,12 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_SCORE_SPECIMEN;
-
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -19,8 +16,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "RR_Auto_Short_NoWait", preselectTeleOp = "TeleopClaw_V5_Dual_Control_MAIN")
-public class First_RoadRunner_Auto_1 extends LinearOpMode {
+@Autonomous(name = "RR_Auto_Push", preselectTeleOp = "TeleopClaw_V5_Dual_Control_MAIN")
+public class RR_Auto_Push extends LinearOpMode {
 
     // Variables used for the Arm positions
     int ARM_TICKS_PER_DEGREE = 28;
@@ -216,7 +213,7 @@ public class First_RoadRunner_Auto_1 extends LinearOpMode {
         }
 
         public Action wristFoldedIn() {
-            return new Wrist.WristFoldedIn();
+            return new WristFoldedIn();
         }
 
         //Class to Put Wrist in Collect Position
@@ -230,7 +227,7 @@ public class First_RoadRunner_Auto_1 extends LinearOpMode {
         }
 
         public Action wristCollect() {
-            return new Wrist.WristCollect();
+            return new WristCollect();
         }
 
         //Class to Put Wrist in Collect Position
@@ -244,7 +241,7 @@ public class First_RoadRunner_Auto_1 extends LinearOpMode {
         }
 
         public Action wristCollect2() {
-            return new Wrist.WristCollect2();
+            return new WristCollect2();
         }
 
         //Class to Put Wrist in Specimen Score Position
@@ -258,7 +255,7 @@ public class First_RoadRunner_Auto_1 extends LinearOpMode {
         }
 
         public Action wristScoreSpecimen() {
-            return new Wrist.WristScoreSpecimen();
+            return new WristScoreSpecimen();
         }
 
         //Class to Put Wrist in Specimen Score Position
@@ -272,7 +269,7 @@ public class First_RoadRunner_Auto_1 extends LinearOpMode {
         }
 
         public Action wristHangSpecimen() {
-            return new Wrist.WristHangSpecimen();
+            return new WristHangSpecimen();
         }
     }
 
@@ -297,7 +294,7 @@ public class First_RoadRunner_Auto_1 extends LinearOpMode {
         }
 
         public Action closeClaw() {
-            return new Claw.CloseClaw();
+            return new CloseClaw();
         }
 
         //Class to Open the Claw Wide
@@ -311,7 +308,7 @@ public class First_RoadRunner_Auto_1 extends LinearOpMode {
         }
 
         public Action openWideClaw() {
-            return new Claw.OpenWideClaw();
+            return new OpenWideClaw();
         }
 
         //Class to Open the Claw Narrow
@@ -325,7 +322,7 @@ public class First_RoadRunner_Auto_1 extends LinearOpMode {
         }
 
         public Action openSmallClaw() {
-            return new Claw.OpenSmallClaw();
+            return new OpenSmallClaw();
         }
     }
 
@@ -367,7 +364,7 @@ public class First_RoadRunner_Auto_1 extends LinearOpMode {
         }
 
         public Action moveArmToPosition(int p) {
-            return new Arm.MoveArmToPosition(p);
+            return new MoveArmToPosition(p);
         }
     }
 
@@ -405,7 +402,7 @@ public class First_RoadRunner_Auto_1 extends LinearOpMode {
         }
 
         public Action moveSlideToPosition(int p) {
-            return new Slide.MoveSlideToPosition(p);
+            return new MoveSlideToPosition(p);
         }
     }
 
