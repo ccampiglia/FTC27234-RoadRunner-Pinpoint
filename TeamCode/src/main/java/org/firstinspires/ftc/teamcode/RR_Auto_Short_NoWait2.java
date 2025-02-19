@@ -1,10 +1,25 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.AutoVariables.*;
+import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_ATTACH_SPECIMEN;
+import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_COLLAPSED_INTO_ROBOT;
+import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_COLLECT_SPECIMEN;
+import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_SCORE_SPECIMEN;
+import static org.firstinspires.ftc.teamcode.AutoVariables.CLAW_CLOSED;
+import static org.firstinspires.ftc.teamcode.AutoVariables.CLAW_OPEN_SMALL;
+import static org.firstinspires.ftc.teamcode.AutoVariables.CLAW_OPEN_WIDE;
+import static org.firstinspires.ftc.teamcode.AutoVariables.POD_DOWN;
+import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_MIN_EXTEND;
+import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_SCORE_SPECIMEN;
+import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_COLLECT_SPECIMEN;
+import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_COLLECT_SPECIMEN2;
+import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_FOLDED_IN;
+import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_HANG_SPECIMEN;
+import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_SCORE_SPECIMEN;
+
 import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -17,8 +32,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "RR_Auto_Short_NoWait", preselectTeleOp = "TeleopClaw_V5_Dual_Control_MAIN")
-public class RR_Auto_Short_NoWait extends LinearOpMode {
+@Autonomous(name = "RR_Auto_Short_NoWait2", preselectTeleOp = "TeleopClaw_V5_Dual_Control_MAIN")
+public class RR_Auto_Short_NoWait2 extends LinearOpMode {
 
     /// Motor and Servo hardware maps
     DcMotor left_arm;
@@ -74,14 +89,18 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
                             //.splineToLinearHeading(new Pose2d(40.0, -40.0, Math.toRadians(90)), Math.toRadians(90))
                             //.lineToY(15.0)
                             //.strafeToLinearHeading(new Vector2d(53, 15), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
+
+                            ///Set up for Collection
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
-                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
-                            .stopAndAdd(wrist.wristCollect())
-                            .stopAndAdd(claw.openWideClaw())
+                            .afterTime(1,slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
+                            .afterTime(2,wrist.wristCollect())
+                            .afterTime(2,claw.openWideClaw())
+
+                            ///Go to Observation Zone to collect first specimen
                             .strafeToLinearHeading(new Vector2d(52, -35), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
                             .lineToY(-45)
 
-                            ///GrabSpecimen
+                            ///Grab First Specimen
                             .waitSeconds(1)
                             .stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
@@ -90,13 +109,13 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
                             //.lineToY(-40)
                             .stopAndAdd(wrist.wristScoreSpecimen())
                             .strafeToLinearHeading(new Vector2d(-5, -33.0), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
-                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_COLLECT))
 
                             //.setTangent(Math.toRadians(90.00))
                             //.lineToY(-34.00)
 
-                            ///Score Specimen
-                            .waitSeconds(1)
+                            ///Score First Specimen
+                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_SCORE_SPECIMEN))
+                            .waitSeconds(.5)
                             .stopAndAdd(arm.moveArmToPosition(ARM_ATTACH_SPECIMEN))
                             .stopAndAdd(wrist.wristHangSpecimen())
                             .stopAndAdd(claw.openSmallClaw())
@@ -106,34 +125,34 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
 
                             ///Strafe Back for 2nd Specimen
                             .strafeToLinearHeading(new Vector2d(52, -44.5), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
-                            .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN2))
-                            .stopAndAdd(wrist.wristCollect2())
-                            .waitSeconds(1.5)
 
-                            ///GrabSpecimen
+                            ///Grab Second Specimen
+                            .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
+                            .stopAndAdd(wrist.wristCollect())
+                            .waitSeconds(1.5)
                             .stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
 
                             ///Move to Submersible
                             .stopAndAdd(wrist.wristScoreSpecimen())
                             .strafeToLinearHeading(new Vector2d(-15, -33.0), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
-                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_COLLECT))
 
-                            ///Score Specimen
-                            .waitSeconds(1)
+                            ///Score Second Specimen
+                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_SCORE_SPECIMEN))
+                            .waitSeconds(.5)
                             .stopAndAdd(arm.moveArmToPosition(ARM_ATTACH_SPECIMEN))
-                            //.stopAndAdd(wrist.wristHangSpecimen())
-                            .stopAndAdd(wrist.wristFoldedIn())
+                            .stopAndAdd(wrist.wristHangSpecimen())
+                            //.stopAndAdd(wrist.wristFoldedIn())
                             .stopAndAdd(claw.openSmallClaw())
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
                             //.lineToY(-40, new TranslationalVelConstraint(velocityOverride))
 
                             ///Move back to OZ
                             .strafeToLinearHeading(new Vector2d(57, -57), Math.toRadians(90.00))
-                            //.stopAndAdd(wrist.wristFoldedIn())
+                            .stopAndAdd(wrist.wristFoldedIn())
                             .stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLAPSED_INTO_ROBOT))
-                            .waitSeconds(1)
+                            //.waitSeconds(1)
                             .build()
             );
         }
@@ -178,7 +197,7 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
         }
 
         public Action wristFoldedIn() {
-            return new Wrist.WristFoldedIn();
+            return new WristFoldedIn();
         }
 
         //Class to Put Wrist in Collect Position
@@ -192,7 +211,7 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
         }
 
         public Action wristCollect() {
-            return new Wrist.WristCollect();
+            return new WristCollect();
         }
 
         //Class to Put Wrist in Collect Position
@@ -206,7 +225,7 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
         }
 
         public Action wristCollect2() {
-            return new Wrist.WristCollect2();
+            return new WristCollect2();
         }
 
         //Class to Put Wrist in Specimen Score Position
@@ -220,7 +239,7 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
         }
 
         public Action wristScoreSpecimen() {
-            return new Wrist.WristScoreSpecimen();
+            return new WristScoreSpecimen();
         }
 
         //Class to Put Wrist in Specimen Score Position
@@ -234,7 +253,7 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
         }
 
         public Action wristHangSpecimen() {
-            return new Wrist.WristHangSpecimen();
+            return new WristHangSpecimen();
         }
     }
 
@@ -259,7 +278,7 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
         }
 
         public Action closeClaw() {
-            return new Claw.CloseClaw();
+            return new CloseClaw();
         }
 
         //Class to Open the Claw Wide
@@ -273,7 +292,7 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
         }
 
         public Action openWideClaw() {
-            return new Claw.OpenWideClaw();
+            return new OpenWideClaw();
         }
 
         //Class to Open the Claw Narrow
@@ -287,7 +306,7 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
         }
 
         public Action openSmallClaw() {
-            return new Claw.OpenSmallClaw();
+            return new OpenSmallClaw();
         }
     }
 
@@ -329,7 +348,7 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
         }
 
         public Action moveArmToPosition(int p) {
-            return new Arm.MoveArmToPosition(p);
+            return new MoveArmToPosition(p);
         }
     }
 
@@ -356,8 +375,10 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 slide.setTargetPosition(slidePosition);
+                slide.setPower(1);
                 slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                ((DcMotorEx) slide).setVelocity(2800);
+                slide.setPower(1);
+                //((DcMotorEx) slide).setVelocity(2800);
                 while (opModeIsActive() && slide.isBusy()) {
                     idle();
                 }
@@ -367,7 +388,7 @@ public class RR_Auto_Short_NoWait extends LinearOpMode {
         }
 
         public Action moveSlideToPosition(int p) {
-            return new Slide.MoveSlideToPosition(p);
+            return new MoveSlideToPosition(p);
         }
     }
 
