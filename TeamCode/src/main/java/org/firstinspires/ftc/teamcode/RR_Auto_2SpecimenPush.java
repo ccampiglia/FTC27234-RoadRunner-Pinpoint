@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_ATTACH_SPECIMEN;
 import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_COLLAPSED_INTO_ROBOT;
 import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_COLLECT_SPECIMEN;
 import static org.firstinspires.ftc.teamcode.AutoVariables.ARM_SCORE_SPECIMEN;
@@ -11,6 +10,7 @@ import static org.firstinspires.ftc.teamcode.AutoVariables.CLAW_OPEN_WIDE;
 import static org.firstinspires.ftc.teamcode.AutoVariables.POD_DOWN;
 import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_MIN_EXTEND;
 import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_SCORE_SPECIMEN;
+import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_SCORE_SPECIMEN2;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_COLLECT_SPECIMEN;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_COLLECT_SPECIMEN2;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_FOLDED_IN;
@@ -34,8 +34,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "RR_Auto_3Specimen", preselectTeleOp = "TeleopClaw_V5_Dual_Control_MAIN")
-public class RR_Auto_3Specimen extends LinearOpMode {
+@Autonomous(name = "RR_Auto_2SpecimenPush", preselectTeleOp = "TeleopClaw_V5_Dual_Control_MAIN")
+public class RR_Auto_2SpecimenPush extends LinearOpMode {
 
     /// Motor and Servo hardware maps
     DcMotor left_arm;
@@ -92,70 +92,53 @@ public class RR_Auto_3Specimen extends LinearOpMode {
                             //.lineToY(15.0)
                             //.strafeToLinearHeading(new Vector2d(53, 15), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
 
-                            ///Place initial Specimen from start
+                            ///Place First Specimen from start
                             .stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
                             .stopAndAdd(wrist.WristScoreSpecimenInitial())
                             .strafeToLinearHeading(new Vector2d(0, -33.0), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
 
-                            ///Score Initial Specimen
+                            ///Score First Specimen
                             .waitSeconds(.2)
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_SCORE_SPECIMEN))
                             .waitSeconds(.4)
                             .stopAndAdd(claw.openWideClaw())
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
 
-                            ///Original Auto Starts from here
                             ///Set up for Collection
                             //.stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
                             //.stopAndAdd(wrist.wristCollect())
 
-                            ///Go to Observation Zone to collect first specimen
+                            ///Go to Observation Zone to collect Second specimen
                             .strafeToLinearHeading(new Vector2d(52, -42), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
                             .stopAndAdd(wrist.wristCollect())
 
-                            ///Grab First Specimen
-                            .waitSeconds(.3)
+                            ///Grab Second Specimen on wall
+                            .waitSeconds(.4)
                             .stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN2))
 
                             ///Back up and Move to Submersible
-                            //.stopAndAdd(wrist.wristScoreSpecimen())
+                            .stopAndAdd(wrist.wristScoreSpecimen())
                             .strafeToLinearHeading(new Vector2d(-10, -33.0), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
 
-                            ///Score First Specimen
-                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_SCORE_SPECIMEN))
-                            .waitSeconds(.3)
-                            .stopAndAdd(claw.openSmallClaw())
-                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
-
-                            ///Strafe Back for 2nd Specimen
-                            .strafeToLinearHeading(new Vector2d(52, -42), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
-
-                            ///Grab Second Specimen
-                            .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
-                            .stopAndAdd(wrist.wristCollect())
-                            .waitSeconds(.3)
-                            .stopAndAdd(claw.closeClaw())
-                            .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN2))
-
-                            ///Move to Submersible
-                            //.stopAndAdd(wrist.wristScoreSpecimen())
-                            .strafeToLinearHeading(new Vector2d(-15, -33.0), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
-
                             ///Score Second Specimen
-                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_SCORE_SPECIMEN))
-                            .waitSeconds(.3)
+                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_SCORE_SPECIMEN2))
+                            .waitSeconds(.4)
                             .stopAndAdd(claw.openSmallClaw())
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
 
-                            ///Move back to OZ
-                            .strafeToLinearHeading(new Vector2d(57, -57), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
+                            ///**** Move to spline behind first block and push back to OZ
+                            .strafeToLinearHeading(new Vector2d(36, -40.0), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(56, 15), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
+
+                            ///Push Block and Move back to OZ
+                            .strafeToLinearHeading(new Vector2d(56, -57), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(wrist.wristFoldedIn())
                             .stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLAPSED_INTO_ROBOT))
-                            //.waitSeconds(.5)
+                            .waitSeconds(1)
                             .build()
             );
         }

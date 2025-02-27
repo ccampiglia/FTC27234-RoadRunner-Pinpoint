@@ -19,6 +19,7 @@ import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_COLLECT_SPECIME
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_COLLECT_SPECIMEN2;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_FOLDED_IN;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_HANG_SPECIMEN;
+import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_SCORE_BASKET;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_SCORE_SPECIMEN;
 
 import androidx.annotation.NonNull;
@@ -91,16 +92,19 @@ public class RR_Auto_Basket extends LinearOpMode {
             int basketX = -65;
             int basketY = -41;
             int collectX1 = -60;
-            int collectX2 = -70;
-            int collectY = -37;
+            int collectX2 = -72;
+            int collectY = -38;
             double waitTime = 1.0;
 
             Actions.runBlocking(
                     drive.actionBuilder(initialPose)
 
                             ///Put 1st block in basket
+                            .stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_BASKET))
-                            .stopAndAdd(wrist.wristScoreSpecimen())
+                            .stopAndAdd(wrist.wristScoreBasket())
+                            //.afterTime(.5,arm.moveArmToPosition(ARM_SCORE_BASKET))
+                            //.afterTime(1,wrist.wristScoreSpecimen())
                             .strafeToLinearHeading(new Vector2d(basketX, basketY), Math.toRadians(225.00))
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MAX_EXTEND))
                             .waitSeconds(waitTime)
@@ -116,7 +120,7 @@ public class RR_Auto_Basket extends LinearOpMode {
 
                             ///Put 2nd block in basket
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_BASKET))
-                            .stopAndAdd(wrist.wristScoreSpecimen())
+                            .stopAndAdd(wrist.wristScoreBasket())
                             .strafeToLinearHeading(new Vector2d(basketX, basketY), Math.toRadians(225.00))
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MAX_EXTEND))
                             .waitSeconds(waitTime)
@@ -132,18 +136,18 @@ public class RR_Auto_Basket extends LinearOpMode {
 
                             ///Put 3rd block in basket
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_BASKET))
-                            .stopAndAdd(wrist.wristScoreSpecimen())
+                            .stopAndAdd(wrist.wristScoreBasket())
                             .strafeToLinearHeading(new Vector2d(basketX, basketY), Math.toRadians(225.00))
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MAX_EXTEND))
                             .waitSeconds(waitTime)
                             .stopAndAdd(claw.openWideClaw())
 
                             /// Back to OZ
-                            .waitSeconds(waitTime)
+                            //.waitSeconds(waitTime)
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
                             .stopAndAdd(wrist.wristFoldedIn())
                             .stopAndAdd(claw.closeClaw())
-                            .strafeToLinearHeading(new Vector2d(65, -57), Math.toRadians(90.00))
+                            .strafeToLinearHeading(new Vector2d(70, -57), Math.toRadians(90.00))
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLAPSED_INTO_ROBOT))
                             .build()
             );
@@ -218,6 +222,16 @@ public class RR_Auto_Basket extends LinearOpMode {
             }
         }
 
+        ///Class to Put Wrist in Basket Score Position
+        public class WristScoreBasket implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                wrist.setPosition(WRIST_SCORE_BASKET);
+                sleep(500);
+                return false;
+            }
+        }
+
         ///Class to Put Wrist in Specimen Score Position
         public class WristHangSpecimen implements Action {
             @Override
@@ -249,6 +263,9 @@ public class RR_Auto_Basket extends LinearOpMode {
         }
         public Action wristScoreSpecimen() {
             return new WristScoreSpecimen();
+        }
+        public Action wristScoreBasket() {
+            return new WristScoreBasket();
         }
         public Action wristHangSpecimen() {
             return new WristHangSpecimen();
