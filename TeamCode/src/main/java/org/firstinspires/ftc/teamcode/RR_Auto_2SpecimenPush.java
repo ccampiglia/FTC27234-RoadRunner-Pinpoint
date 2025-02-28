@@ -11,6 +11,7 @@ import static org.firstinspires.ftc.teamcode.AutoVariables.POD_DOWN;
 import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_MIN_EXTEND;
 import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_SCORE_SPECIMEN;
 import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_SCORE_SPECIMEN2;
+import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_ZERO_EXTEND;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_COLLECT_SPECIMEN;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_COLLECT_SPECIMEN2;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_FOLDED_IN;
@@ -85,47 +86,45 @@ public class RR_Auto_2SpecimenPush extends LinearOpMode {
         if (opModeIsActive()) {
             ///Automation Run Code
             ///Push Blocks
+            int hangSpecimen1X = 0;
+            int hangSpecimen2X = -10;
+            int specimenY = -33;
+            int collectX = 52;
+            int collectY = -42;
+            double waitTime = 0.4;
+
             Actions.runBlocking(
                     drive.actionBuilder(initialPose)
-                            ///**** Move forward and spline behind first block and push back to OZ
-                            //.splineToLinearHeading(new Pose2d(40.0, -40.0, Math.toRadians(90)), Math.toRadians(90))
-                            //.lineToY(15.0)
-                            //.strafeToLinearHeading(new Vector2d(53, 15), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
-
                             ///Place First Specimen from start
                             .stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN))
                             .stopAndAdd(wrist.WristScoreSpecimenInitial())
-                            .strafeToLinearHeading(new Vector2d(0, -33.0), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(hangSpecimen1X, specimenY), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
 
                             ///Score First Specimen
-                            .waitSeconds(.2)
+                            .waitSeconds(waitTime)
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_SCORE_SPECIMEN))
-                            .waitSeconds(.4)
+                            .waitSeconds(waitTime)
                             .stopAndAdd(claw.openWideClaw())
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
 
-                            ///Set up for Collection
-                            //.stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
-                            //.stopAndAdd(wrist.wristCollect())
-
                             ///Go to Observation Zone to collect Second specimen
-                            .strafeToLinearHeading(new Vector2d(52, -42), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(collectX, collectY), Math.toRadians(-90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLECT_SPECIMEN))
                             .stopAndAdd(wrist.wristCollect())
 
                             ///Grab Second Specimen on wall
-                            .waitSeconds(.4)
+                            .waitSeconds(waitTime)
                             .stopAndAdd(claw.closeClaw())
                             .stopAndAdd(arm.moveArmToPosition(ARM_SCORE_SPECIMEN2))
 
                             ///Back up and Move to Submersible
                             .stopAndAdd(wrist.wristScoreSpecimen())
-                            .strafeToLinearHeading(new Vector2d(-10, -33.0), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
+                            .strafeToLinearHeading(new Vector2d(hangSpecimen2X, specimenY), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
 
                             ///Score Second Specimen
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_SCORE_SPECIMEN2))
-                            .waitSeconds(.4)
+                            .waitSeconds(waitTime + 0.5)
                             .stopAndAdd(claw.openSmallClaw())
                             .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
 
@@ -134,11 +133,12 @@ public class RR_Auto_2SpecimenPush extends LinearOpMode {
                             .strafeToLinearHeading(new Vector2d(56, 15), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
 
                             ///Push Block and Move back to OZ
-                            .strafeToLinearHeading(new Vector2d(56, -57), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
+                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_ZERO_EXTEND))
                             .stopAndAdd(wrist.wristFoldedIn())
                             .stopAndAdd(claw.closeClaw())
+                            .strafeToLinearHeading(new Vector2d(56, -57), Math.toRadians(90.00), new TranslationalVelConstraint(velocityOverride))
                             .stopAndAdd(arm.moveArmToPosition(ARM_COLLAPSED_INTO_ROBOT))
-                            .waitSeconds(1)
+                            //.waitSeconds(1)
                             .build()
             );
         }

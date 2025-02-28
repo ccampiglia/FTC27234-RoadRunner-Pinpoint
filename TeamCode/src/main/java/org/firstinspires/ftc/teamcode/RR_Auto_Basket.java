@@ -14,6 +14,7 @@ import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_COLLECT;
 import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_MAX_EXTEND;
 import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_MIN_EXTEND;
 import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_SCORE_SPECIMEN;
+import static org.firstinspires.ftc.teamcode.AutoVariables.SLIDE_ZERO_EXTEND;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_COLLECT_FLOOR;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_COLLECT_SPECIMEN;
 import static org.firstinspires.ftc.teamcode.AutoVariables.WRIST_COLLECT_SPECIMEN2;
@@ -144,7 +145,7 @@ public class RR_Auto_Basket extends LinearOpMode {
 
                             /// Back to OZ
                             //.waitSeconds(waitTime)
-                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_MIN_EXTEND))
+                            .stopAndAdd(slide.moveSlideToPosition(SLIDE_ZERO_EXTEND))
                             .stopAndAdd(wrist.wristFoldedIn())
                             .stopAndAdd(claw.closeClaw())
                             .strafeToLinearHeading(new Vector2d(70, -57), Math.toRadians(90.00))

@@ -16,6 +16,7 @@ public class AutoVariables {
     /// Variables to store the lengths of viper slide positions.
     public static final int SLIDE_TICKS_PER_INCH = 112;
     public static final int SLIDE_MIN_EXTEND = 1 * SLIDE_TICKS_PER_INCH;
+    public static final int SLIDE_ZERO_EXTEND = 0 * SLIDE_TICKS_PER_INCH;
     public static final int SLIDE_MAX_EXTEND = 17 * SLIDE_TICKS_PER_INCH;
     public static final int SLIDE_COLLECT = 8 * SLIDE_TICKS_PER_INCH;
     public static final int SLIDE_SCORE_SPECIMEN = 9 * SLIDE_TICKS_PER_INCH;  //4
